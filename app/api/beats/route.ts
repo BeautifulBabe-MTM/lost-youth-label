@@ -1,10 +1,24 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
+import { prisma } from "@/app/lib/db";
 
-export async function GET() {
-  const beats = [
-    { id: '1', title: 'Krovostok Style', bpm: 90, price: 30, url: '/demo.mp3' },
-    { id: '2', title: 'Drill Shift', bpm: 140, price: 50, url: '/drill.mp3' },
-  ];
-  
-  return NextResponse.json(beats);
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+    const { title, genre, bpm, price, audioUrl, authorId } = body;
+
+    const newBeat = await prisma.beat.create({
+      data: {
+        title,
+        genre,
+        bpm: parseInt(bpm),
+        price: parseFloat(price),
+        audioUrl,
+        authorId, // ID продюсера из твоего ростера
+      },
+    });
+
+    return NextResponse.json(newBeat, { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ error: "Ошибка при добавлении бита" }, { status: 500 });
+  }
 }
