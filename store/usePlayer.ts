@@ -7,10 +7,11 @@ interface Beat {
 }
 
 interface PlayerStore {
-  activeBeat: Beat | null;
+  activeBeat: any | null;
   isPlaying: boolean;
-  setBeat: (beat: Beat) => void;
+  setBeat: (beat: any) => void;
   toggle: () => void;
+  setPlaying: (val: boolean) => void; // Добавь эту строку
 }
 
 export const usePlayer = create<PlayerStore>((set) => ({
@@ -18,4 +19,5 @@ export const usePlayer = create<PlayerStore>((set) => ({
   isPlaying: false,
   setBeat: (beat) => set({ activeBeat: beat, isPlaying: true }),
   toggle: () => set((state) => ({ isPlaying: !state.isPlaying })),
+  setPlaying: (val) => set({ isPlaying: val }), // И саму функцию здесь
 }));

@@ -1,5 +1,6 @@
 import './globals.css';
 import Link from 'next/link';
+import AudioPlayer from '@/app/components/AudioPlayer';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -15,6 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </nav>
         {children}
         {/* Сюда позже воткнем глобальный плеер из Zustand */}
+        <AudioPlayer />
       </body>
     </html>
   );
