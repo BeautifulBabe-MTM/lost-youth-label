@@ -8,7 +8,7 @@ export default async function RosterPage() {
 
   return (
     <main className="p-8 max-w-6xl mx-auto">
-      <h1 className="text-6xl font-black mb-12 uppercase tracking-tighter">The Roster</h1>
+      <h1 className="text-6xl font-black mb-12 uppercase tracking-tighter">Артисты</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         {residents.map((artist) => (
           <Link href={`/roster/${artist.id}`} key={artist.id} className="group">
