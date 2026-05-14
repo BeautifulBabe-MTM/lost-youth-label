@@ -22,6 +22,6 @@ model Beat {
   bpm       Int
   price     Float
   audioUrl  String
-  authorId  String   @db.ObjectId 
-  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String?   @db.ObjectId 
+  author    User?     @relation(fields: [authorId], references: [id])
 }
