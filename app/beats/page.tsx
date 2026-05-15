@@ -17,7 +17,14 @@ async function getAllBeats() {
 }
 
 export default async function BeatsMarketPage() {
-    const beats = await getAllBeats();
+    const beats = await prisma.beat.findMany({
+        include: {
+            rosterMember: true, // Это "джоинит" таблицу артистов к битам
+        },
+        orderBy: {
+            createdAt: 'desc' // Опционально: свежие сверху
+        }
+    });
 
     return (
         <main className="min-h-screen bg-black text-white p-8">

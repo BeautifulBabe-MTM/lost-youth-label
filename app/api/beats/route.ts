@@ -4,7 +4,7 @@ import { prisma } from "@/app/lib/db";
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { title, genre, bpm, price, audioUrl, authorId } = body;
+        const { title, genre, bpm, price, audioUrl, rosterMemberId } = body;
 
         const newBeat = await prisma.beat.create({
             data: {
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
                 bpm: parseInt(bpm),
                 price: parseFloat(price),
                 audioUrl,
-                authorId, // Твой ObjectId из Монго
+                rosterMemberId: rosterMemberId,
             },
         });
 

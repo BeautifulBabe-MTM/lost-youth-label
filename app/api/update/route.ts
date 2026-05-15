@@ -2,10 +2,10 @@ import { prisma } from "@/app/lib/db";
 import { NextResponse } from "next/server";
 
 export async function PATCH(req: Request) {
-  const body = await req.json();
-  const { id, type, data } = body;
 
   try {
+    const body = await req.json();
+    const { id, type, data } = body;
     if (type === 'beat') {
       await prisma.beat.update({
         where: { id },
@@ -13,6 +13,8 @@ export async function PATCH(req: Request) {
           title: data.title,
           bpm: parseInt(data.bpm),
           price: parseFloat(data.price),
+          genre: data.genre,
+          rosterMemberId: data.rosterMemberId || null,
         }
       });
     } else {

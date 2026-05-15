@@ -6,8 +6,11 @@ export default function BeatCard({ beat }: { beat: any }) {
   const { setBeat, activeBeat, isPlaying, toggle } = usePlayer();
   const isCurrent = activeBeat?.id === beat.id;
 
-  // Проверяем роль артиста. Если в БД стоит 'LABEL', то зажигаем подпись.
+  // Проверяем роль артиста через подтянутую связь
   const isLabel = beat.rosterMember?.role === "LABEL";
+  
+  // Берем имя из rosterMember (Killaweed или boy toyyy)
+  const artistName = beat.rosterMember?.name || "Independent";
 
   return (
     <div 
@@ -17,7 +20,7 @@ export default function BeatCard({ beat }: { beat: any }) {
       <div className="absolute inset-0 bg-zinc-950" />
       <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-50" />
 
-      {/* 1. УГЛОВАЯ ПОДПИСЬ (LABEL TAG) */}
+      {/* УГЛОВАЯ ПОДПИСЬ */}
       {isLabel && (
         <div className="absolute top-0 left-0 z-20">
           <div className="bg-white text-black text-[7px] font-black px-2 py-0.5 uppercase tracking-tighter shadow-2xl">
@@ -27,10 +30,8 @@ export default function BeatCard({ beat }: { beat: any }) {
       )}
 
       <div className="relative h-full flex items-center justify-between px-6">
-        
         <div className="flex flex-col">
           <div className="flex items-center gap-3">
-            {/* 2. ТЕКСТОВАЯ ПОДПИСЬ РЯДОМ С ЖАНРОМ */}
             {isLabel && (
               <span className="text-[9px] font-black text-white bg-zinc-800 px-1.5 py-0.5 uppercase tracking-widest mr-1">
                 LABEL
@@ -50,9 +51,11 @@ export default function BeatCard({ beat }: { beat: any }) {
             {beat.title}
           </h3>
           
-          {/* Имя автора под названием */}
-          <p className="text-[9px] text-zinc-600 uppercase font-bold tracking-widest mt-0.5">
-            PROD. BY {beat.rosterMember?.name || 'LY PRODUCER'}
+          {/* ТЕПЕРЬ ТУТ БУДЕТ ВЫВОДИТЬСЯ ИМЯ (Killaweed / boy toyyy) */}
+          <p className="text-[9px] text-white uppercase font-black tracking-[0.2em] mt-0.5">
+            PROD. BY <span className={isLabel ? "text-white" : "text-zinc-500"}>
+              {artistName}
+            </span>
           </p>
         </div>
 
