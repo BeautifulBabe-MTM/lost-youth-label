@@ -1,1 +1,11 @@
-/* /index.html  200
+/                         /
+/roster                   /roster
+/releases                 /releases
+/beats                    /beats
+/contact                  /contact
+/admin/upload-beat        /admin/upload-beat
+/admin/upload-release     /admin/upload-release
+/admin/manage             /admin/manage
+/admin/roster             /admin/roster 
+/admin/stats              /admin/stats 
+/*                        /404
