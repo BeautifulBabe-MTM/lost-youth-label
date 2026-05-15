@@ -18,6 +18,7 @@ model User {
 model RosterMember {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String   @unique
+  alias  String?
   role      String   // Например: "Producer", "Sound Engineer", "Artist"
   bio       String?
   imageUrl  String?
@@ -35,8 +36,8 @@ model Release {
   audioUrl       String        // Ссылка на сам трек
   spotifyUrl     String?
   appleMusicUrl  String?
+  feat           String?
   
-  // Релизы обычно делают только участники ростера
   rosterMemberId String        @db.ObjectId
   author         RosterMember  @relation(fields: [rosterMemberId], references: [id])
   

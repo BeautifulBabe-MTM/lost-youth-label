@@ -12,11 +12,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/admin/upload-beat" className="hover:text-white transition">
             Добавить бит
           </Link>
-          <Link href="/admin/beats" className="hover:text-white transition">
-            Все биты
-          </Link>
           <Link href="/admin/upload-release" className="hover:text-white transition">
             Добавить трек
+          </Link>
+          <Link href="/admin/manage" className="hover:text-white transition">
+            Управление музыкой
           </Link>
           <Link href="/admin/roster" className="hover:text-white transition">
             Управление лейблом

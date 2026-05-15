@@ -22,12 +22,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Link href="/" className="text-xl font-black tracking-tighter">LOST YOUTH</Link>
           <div className="flex gap-8 text-xs font-bold uppercase tracking-widest">
             <Link href="/roster" className="hover:text-zinc-400 transition">Лейбл</Link>
+            <Link href="/releases" className="hover:text-zinc-400 transition">Релизы</Link>
             <Link href="/beats" className="hover:text-zinc-400 transition">Beats Market</Link>
             <Link href="/contact" className="hover:text-zinc-400 transition">Сотрудничество</Link>
           </div>
         </nav>
         {children}
-        {/* Сюда позже воткнем глобальный плеер из Zustand */}
         <AudioPlayer />
         <BottomBar />
         <PlayerUI />

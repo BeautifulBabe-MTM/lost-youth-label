@@ -24,7 +24,7 @@ export default function ReleaseCard({ release }: { release: any }) {
           {release.title}
         </h3>
         <p className="text-zinc-400 text-[9px] uppercase font-bold tracking-widest mb-4">
-          {release.author?.name}
+          {release.author?.name} 
         </p>
 
         <button 

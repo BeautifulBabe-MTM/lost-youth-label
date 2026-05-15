@@ -4,11 +4,12 @@ import { prisma } from "@/app/lib/db";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { title, audioUrl, coverUrl, rosterMemberId, spotifyUrl, appleMusicUrl } = body;
+    const { title, feat, audioUrl, coverUrl, rosterMemberId, spotifyUrl, appleMusicUrl } = body;
 
     const newRelease = await prisma.release.create({
       data: {
         title,
+        feat: feat || null,
         audioUrl,
         coverUrl,
         rosterMemberId,

@@ -4,18 +4,16 @@ import { usePlayer } from '@/store/usePlayer';
 
 export default function AudioPlayer() {
     const audioRef = useRef<HTMLAudioElement>(null);
-    
-    // Достаем всё нужное из стора
-    const { 
-        activeBeat, 
-        isPlaying, 
-        currentTime, 
-        setDuration, 
-        setProgress, 
-        setPlaying 
+
+    const {
+        activeBeat,
+        isPlaying,
+        currentTime,
+        setDuration,
+        setProgress,
+        setPlaying
     } = usePlayer();
 
-    // 1. Обновляем прогресс в сторе при проигрывании
     const onTimeUpdate = () => {
         if (audioRef.current) {
             // Чтобы не спамить ререндерами слишком часто, можно округлять
@@ -29,24 +27,30 @@ export default function AudioPlayer() {
         }
     };
 
+    useEffect(() => {
+        if (!activeBeat && audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.src = ""; // Убираем источник звука
+            audioRef.current.load();   // Сбрасываем состояние тега
+            setPlaying(false);         // Ставим на паузу в сторе
+            setProgress(0);            // Сбрасываем время в сторе
+        }
+    }, [activeBeat]);
+
     // 2. Смена трека
     useEffect(() => {
         if (activeBeat && audioRef.current) {
-            // Если включили новый трек, а адрес тот же — не перезагружаем
             if (audioRef.current.src !== activeBeat.audioUrl) {
                 audioRef.current.src = activeBeat.audioUrl;
                 audioRef.current.load();
             }
-            
+
             if (isPlaying) {
                 audioRef.current.play().catch(err => console.log("Ждем взаимодействия пользователя..."));
             }
         }
     }, [activeBeat]);
 
-    // 3. Синхронизация перемотки (Scrubbing)
-    // Когда ты двигаешь ползунок в UI, currentTime в сторе меняется.
-    // Мы перематываем аудио, только если разница больше секунды (чтобы не дергалось при обычном проигрывании)
     useEffect(() => {
         if (audioRef.current) {
             const diff = Math.abs(audioRef.current.currentTime - currentTime);
@@ -56,11 +60,10 @@ export default function AudioPlayer() {
         }
     }, [currentTime]);
 
-    // 4. Пауза / Плей
     useEffect(() => {
         if (!audioRef.current) return;
         if (isPlaying) {
-            audioRef.current.play().catch(() => {});
+            audioRef.current.play().catch(() => { });
         } else {
             audioRef.current.pause();
         }
