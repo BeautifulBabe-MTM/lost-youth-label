@@ -15,6 +15,34 @@ model User {
   beats Beat[]
 }
 
+model RosterMember {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String   @unique
+  role      String   // Например: "Producer", "Sound Engineer", "Artist"
+  bio       String?
+  imageUrl  String?
+  instagram String?
+  spotify   String?
+  beats     Beat[]
+  releases  Release[]
+  createdAt DateTime? @default(now())
+}
+
+model Release {
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
+  title          String
+  coverUrl       String?       // Обложка трека
+  audioUrl       String        // Ссылка на сам трек
+  spotifyUrl     String?
+  appleMusicUrl  String?
+  
+  // Релизы обычно делают только участники ростера
+  rosterMemberId String        @db.ObjectId
+  author         RosterMember  @relation(fields: [rosterMemberId], references: [id])
+  
+  createdAt      DateTime?      @default(now())
+}
+
 model Beat {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   title     String
@@ -24,4 +52,7 @@ model Beat {
   audioUrl  String
   authorId  String?   @db.ObjectId 
   author    User?     @relation(fields: [authorId], references: [id])
+  rosterMemberId String? @db.ObjectId
+  rosterMember   RosterMember? @relation(fields: [rosterMemberId], references: [id])
+  createdAt      DateTime?      @default(now())
 }

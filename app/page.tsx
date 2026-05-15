@@ -1,18 +1,25 @@
 import Link from 'next/link';
 import { prisma } from "@/app/lib/db";
+import ReleaseCard from "@/app/components/ReleaseCard";
 import BeatCard from "@/app/components/BeatCard";
 
-async function getFeaturedBeats() {
-  // Тянем последние 3 бита для витрины
-  return await prisma.beat.findMany({
-    take: 3,
-    include: { author: true },
-    orderBy: { id: 'desc' },
-  });
+async function getFeaturedData() {
+  const [beats, releases] = await Promise.all([
+    prisma.beat.findMany({
+      take: 3,
+      include: { rosterMember: true },
+      orderBy: { id: 'desc' },
+    }),
+    prisma.release.findMany({
+      take: 4,
+      include: { author: true },
+      orderBy: { createdAt: 'desc' },
+    })
+  ]);
+  return { beats, releases };
 }
-
 export default async function HomePage() {
-  const featuredBeats = await getFeaturedBeats();
+  const { beats, releases } = await getFeaturedData();
 
   return (
     <div className="flex flex-col">
@@ -38,20 +45,39 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* FEATURED BEATS - Свежее мясо */}
-      <section className="py-24 px-6 md:px-12 bg-black">
+      <section className="py-24 px-6 md:px-12 bg-zinc-950/40">
+        <div className="flex justify-between items-end mb-12">
+          <div className="border-l-4 border-white pl-6">
+            <h2 className="text-4xl font-black uppercase tracking-tighter">Новые релизы</h2>
+            <p className="text-zinc-500 text-xs uppercase tracking-widest mt-2 font-bold">Официальные дропы лейбла</p>
+          </div>
+          <Link href="/releases" className="text-zinc-500 hover:text-white text-[10px] uppercase tracking-widest border-b border-zinc-900 pb-1 transition-all">
+            Слушать все
+          </Link>
+        </div>
+
+        {/* Сетка релизов: 2 в ряд на мобилах, 4 на десктопе */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {releases.map((release: any) => (
+            <ReleaseCard key={release.id} release={release} />
+          ))}
+        </div>
+      </section>
+
+      {/* BEATS SECTION - Маркет битов */}
+      <section className="py-24 px-6 md:px-12 border-t border-zinc-900">
         <div className="flex justify-between items-end mb-12">
           <div>
-            <h2 className="text-3xl font-black uppercase tracking-tighter">Свежие релизы</h2>
-            <p className="text-zinc-500 text-xs uppercase tracking-widest mt-2">Эксклюзивный звук для твоих треков</p>
+            <h2 className="text-3xl font-black uppercase tracking-tighter">Свежее мясо</h2>
+            <p className="text-zinc-500 text-xs uppercase tracking-widest mt-2 font-bold">Биты от наших продюсеров</p>
           </div>
-          <Link href="/beats" className="text-zinc-400 hover:text-white text-xs uppercase tracking-widest border-b border-zinc-800 pb-1">
-            Смотреть все
+          <Link href="/beats" className="text-zinc-500 hover:text-white text-[10px] uppercase tracking-widest border-b border-zinc-900 pb-1 transition-all">
+            В маркет
           </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {featuredBeats.map((beat) => (
+          {beats.map((beat: any) => (
             <BeatCard key={beat.id} beat={beat} />
           ))}
         </div>
@@ -74,7 +100,7 @@ export default async function HomePage() {
           <a href="#" className="hover:text-white transition">Telegram</a>
           <a href="#" className="hover:text-white transition">VK</a>
           <a href="#" className="hover:text-white transition">YouTube</a>
-          <Link href="/admin/upload" className="text-[8px] uppercase tracking-widest">
+          <Link href="/admin/upload-beat" className="text-[8px] uppercase tracking-widest">
             Панель управления
           </Link>
         </div>

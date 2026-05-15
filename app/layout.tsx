@@ -3,6 +3,7 @@ import Link from 'next/link';
 import AudioPlayer from '@/app/components/AudioPlayer';
 import BottomBar from './components/BottomBar';
 import type { Metadata } from 'next';
+import PlayerUI from './components/PlayerUI';
 
 export const metadata: Metadata = {
   title: 'LOST YOUTH — BEATMAKING & PRODUCTION',
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Сюда позже воткнем глобальный плеер из Zustand */}
         <AudioPlayer />
         <BottomBar />
+        <PlayerUI />
       </body>
     </html>
   );
