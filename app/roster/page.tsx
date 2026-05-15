@@ -45,7 +45,7 @@ export default async function RosterPage() {
               <div className="w-12 h-12 border border-dashed border-zinc-700 flex items-center justify-center group-hover:border-white transition-colors">
                 <span className="text-2xl text-zinc-700 group-hover:text-white">+</span>
               </div>
-              <p className="text-zinc-700 uppercase font-black text-sm tracking-widest group-hover:text-white transition-colors">Join the family</p>
+              <p className="text-zinc-700 uppercase font-black text-sm tracking-widest group-hover:text-white transition-colors">Подать заявку</p>
             </div>
           </div>
         </div>
