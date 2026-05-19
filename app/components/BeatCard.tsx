@@ -6,10 +6,8 @@ export default function BeatCard({ beat }: { beat: any }) {
   const { setBeat, activeBeat, isPlaying, toggle } = usePlayer();
   const isCurrent = activeBeat?.id === beat.id;
 
-  // Проверяем роль артиста через подтянутую связь
   const isLabel = beat.rosterMember?.role === "LABEL";
   
-  // Берем имя из rosterMember (Killaweed или boy toyyy)
   const artistName = beat.rosterMember?.name || "Independent";
 
   return (
@@ -20,7 +18,6 @@ export default function BeatCard({ beat }: { beat: any }) {
       <div className="absolute inset-0 bg-zinc-950" />
       <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-50" />
 
-      {/* УГЛОВАЯ ПОДПИСЬ */}
       {isLabel && (
         <div className="absolute top-0 left-0 z-20">
           <div className="bg-white text-black text-[7px] font-black px-2 py-0.5 uppercase tracking-tighter shadow-2xl">
@@ -51,7 +48,6 @@ export default function BeatCard({ beat }: { beat: any }) {
             {beat.title}
           </h3>
           
-          {/* ТЕПЕРЬ ТУТ БУДЕТ ВЫВОДИТЬСЯ ИМЯ (Killaweed / boy toyyy) */}
           <p className="text-[9px] text-white uppercase font-black tracking-[0.2em] mt-0.5">
             PROD. BY <span className={isLabel ? "text-white" : "text-zinc-500"}>
               {artistName}

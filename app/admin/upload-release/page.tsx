@@ -18,7 +18,7 @@ export default function UploadReleasePage() {
         fetch("/api/roster")
             .then(res => res.json())
             .then(data => { if (Array.isArray(data)) setArtists(data); });
-        
+
         fetch("/api/covers")
             .then(res => res.json())
             .then(setRecentCovers);
@@ -29,7 +29,6 @@ export default function UploadReleasePage() {
         const audioFile = audioInputRef.current?.files?.[0];
         const newCoverFile = coverInputRef.current?.files?.[0];
 
-        // Проверка: аудио обязательно + (либо старая обложка, либо файл новой)
         if (!audioFile || (!newCoverFile && !selectedCover) || !selectedArtist) {
             return alert("Заполни всё: аудио, артиста и обложку!");
         }
@@ -43,7 +42,6 @@ export default function UploadReleasePage() {
             });
             const audioBlob = await audioRes.json();
 
-            // Если старая обложка не выбрана, но есть файл — грузим его
             if (!finalCoverUrl && newCoverFile) {
                 setStatus("Загрузка новой обложки...");
                 const coverRes = await fetch(`/api/upload?filename=cover_${newCoverFile.name}`, {
@@ -86,7 +84,6 @@ export default function UploadReleasePage() {
             </h2>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-                {/* Артист */}
                 <div className="flex flex-col gap-2">
                     <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest italic">Исполнитель</label>
                     <select required className="bg-zinc-950 border border-zinc-800 p-4 outline-none appearance-none focus:border-white transition uppercase text-xs"
@@ -96,7 +93,6 @@ export default function UploadReleasePage() {
                     </select>
                 </div>
 
-                {/* Названия */}
                 <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
                         <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest italic">Название</label>
@@ -110,16 +106,14 @@ export default function UploadReleasePage() {
                     </div>
                 </div>
 
-                {/* Аудио */}
                 <div className="flex flex-col gap-2">
                     <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest italic">Аудио (MP3/WAV)</label>
                     <input type="file" ref={audioInputRef} accept="audio/*" className="bg-zinc-950 border border-zinc-800 p-3 text-[10px] cursor-pointer" />
                 </div>
 
-                {/* Единственный блок Обложки */}
                 <div className="flex flex-col gap-3">
                     <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest italic">Обложка</label>
-                    
+
                     {recentCovers.length > 0 && (
                         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                             {recentCovers.map(url => (
@@ -144,7 +138,6 @@ export default function UploadReleasePage() {
                     )}
                 </div>
 
-                {/* Стриминги */}
                 <div className="grid grid-cols-2 gap-4">
                     <input placeholder="SPOTIFY" className="bg-zinc-950 border border-zinc-800 p-4 outline-none text-[10px] uppercase"
                         onChange={(e) => setLinks({ ...links, spotify: e.target.value })} />

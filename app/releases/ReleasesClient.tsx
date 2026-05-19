@@ -11,7 +11,6 @@ export default function ReleasesClient({ initialReleases, artists }: any) {
 
   return (
     <div>
-      {/* Навигация по фильтрам */}
       <div className="flex flex-wrap gap-3 mb-12 border-b border-zinc-900 pb-8">
         <button 
           onClick={() => setActiveFilter("all")}
@@ -39,13 +38,11 @@ export default function ReleasesClient({ initialReleases, artists }: any) {
         ))}
       </div>
 
-      {/* Сетка треков */}
       {filteredReleases.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {filteredReleases.map((release: any) => (
             <div key={release.id} className="flex flex-col gap-3">
               <ReleaseCard release={release} />
-              {/* Дополнительная инфо под карточкой, если нужно */}
               <div className="flex flex-col">
                 <span className="text-[10px] text-zinc-600 font-mono">
                   {new Date().getFullYear()} © LY

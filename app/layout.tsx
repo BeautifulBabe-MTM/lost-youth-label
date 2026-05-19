@@ -8,9 +8,8 @@ import PlayerUI from './components/PlayerUI';
 export const metadata: Metadata = {
   title: 'LOST YOUTH — BEATMAKING & PRODUCTION',
   description: 'Custom beats for drill, trap and minimalist artists.',
-  // Можно добавить иконку (фавикон)
   icons: {
-    icon: '/favicon.ico', // положи картинку в папку public
+    icon: '/favicon.ico',
   }
 };
 

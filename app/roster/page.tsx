@@ -6,7 +6,6 @@ async function getRoster() {
   const members = await prisma.rosterMember.findMany();
 
   const grouped = members.reduce((acc: any, member) => {
-    // Временная логика: если это ты или кент, пихаем в одну группу
     const groupKey = (member.name === "Killaweed" || member.name === "boy toyyy")
       ? "OWNER_GROUP"
       : member.id;
@@ -39,7 +38,6 @@ export default async function RosterPage() {
             <ArtistCard key={idx} profiles={profiles} />
           ))}
 
-          {/* Слот "Присоединяйся" */}
           <div className="bg-black flex items-center justify-center border-r border-b border-zinc-900 aspect-[3/4] hover:bg-zinc-950 transition-colors cursor-pointer group">
             <div className="flex flex-col items-center gap-4">
               <div className="w-12 h-12 border border-dashed border-zinc-700 flex items-center justify-center group-hover:border-white transition-colors">

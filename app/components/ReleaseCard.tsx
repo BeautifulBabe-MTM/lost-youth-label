@@ -35,7 +35,6 @@ export default function ReleaseCard({ release }: { release: any }) {
         </button>
       </div>
 
-      {/* Маленький значок "Play" в углу, когда не наведен */}
       {!isCurrent && (
         <div className="absolute bottom-3 right-3 p-1 bg-black/50 backdrop-blur-md opacity-100 group-hover:opacity-0 transition-opacity">
            <Play size={10} className="text-white" />

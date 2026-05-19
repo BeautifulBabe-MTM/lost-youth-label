@@ -2,7 +2,6 @@ import { prisma } from "@/app/lib/db";
 import ReleasesClient from "./ReleasesClient";
 
 export default async function ReleasesPage() {
-  // Тянем все релизы с авторами и всех артистов ростера для фильтра
   const [releases, artists] = await Promise.all([
     prisma.release.findMany({
       include: { author: true },
@@ -25,7 +24,6 @@ export default async function ReleasesPage() {
           </p>
         </header>
 
-        {/* Передаем данные в клиентский компонент */}
         <ReleasesClient initialReleases={releases} artists={artists} />
       </div>
     </main>

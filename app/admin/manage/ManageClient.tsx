@@ -8,7 +8,6 @@ export default function ManageClient({ initialBeats, initialReleases }: any) {
     const [beats, setBeats] = useState(initialBeats);
     const [releases, setReleases] = useState(initialReleases);
 
-    // Состояние для редактирования
     const [editingItem, setEditingItem] = useState<any>(null);
 
     const handleDelete = async (id: string, type: 'beat' | 'release') => {
@@ -62,7 +61,6 @@ export default function ManageClient({ initialBeats, initialReleases }: any) {
                 </button>
             </div>
 
-            {/* ТАБЛИЦА */}
             <div className="overflow-hidden border border-zinc-900 bg-zinc-950/30">
                 <table className="w-full text-left border-collapse text-xs">
                     <thead className="bg-zinc-950 text-zinc-500 uppercase font-bold tracking-widest text-[9px]">
@@ -130,7 +128,6 @@ export default function ManageClient({ initialBeats, initialReleases }: any) {
                 </table>
             </div>
 
-            {/* МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ */}
             {editingItem && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
                     <div className="bg-zinc-950 border border-zinc-900 w-full max-w-md p-8 shadow-2xl">

@@ -5,14 +5,13 @@ import { Play, Pause, SkipForward, Volume2 } from 'lucide-react';
 export default function BottomBar() {
   const { activeBeat, isPlaying, toggle, currentTime, duration, setProgress } = usePlayer();
 
-  if (!activeBeat) return null; // Если ничего не выбрано, бар скрыт
+  if (!activeBeat) return null;
 
   const progress = (currentTime / duration) * 100 || 0;
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTime = parseFloat(e.target.value);
     setProgress(newTime);
-    // Находим аудио-элемент и меняем его время
     const audio = document.querySelector('audio');
     if (audio) audio.currentTime = newTime;
   };
@@ -25,7 +24,6 @@ export default function BottomBar() {
 
   return (
     <div className="fixed bottom-0 left-0 w-full bg-black/90 backdrop-blur-xl border-t border-zinc-900 z-[100] px-6 py-4">
-      {/* Ползунок перемотки (кастомный инпут поверх бара) */}
       <div className="absolute top-0 left-0 w-full h-[2px] bg-zinc-800 group cursor-pointer">
         <input
           type="range"
@@ -44,7 +42,6 @@ export default function BottomBar() {
       </div>
 
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Инфо о треке */}
         <div className="flex items-center gap-4 w-1/3">
           <div className="w-10 h-10 bg-zinc-900 border border-zinc-800 flex items-center justify-center">
             <div className={`w-2 h-2 bg-white rounded-full ${isPlaying ? 'animate-ping' : ''}`} />
@@ -55,7 +52,6 @@ export default function BottomBar() {
           </div>
         </div>
 
-        {/* Управление */}
         <div className="flex flex-col items-center gap-1 w-1/3">
           <div className="flex items-center gap-6">
             <button className="text-zinc-500 hover:text-white transition"><SkipForward size={18} className="rotate-180" /></button>
@@ -74,7 +70,6 @@ export default function BottomBar() {
           </div>
         </div>
 
-        {/* Доп. функции (громкость) */}
         <div className="flex justify-end items-center gap-4 w-1/3">
           <Volume2 size={16} className="text-zinc-500" />
           <div className="w-24 h-[1px] bg-zinc-800 relative">

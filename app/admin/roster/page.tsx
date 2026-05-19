@@ -21,7 +21,6 @@ export default function AdminRosterPage() {
     try {
       setStatus("Загрузка изображения...");
 
-      // 1. Загружаем фото в Vercel Blob (используем твой готовый апи)
       const uploadRes = await fetch(`/api/upload?filename=${file.name}`, {
         method: 'POST',
         body: file,
@@ -32,7 +31,6 @@ export default function AdminRosterPage() {
       
       setStatus("Сохранение в базу данных...");
 
-      // 2. Сохраняем участника в БД (согласно схеме RosterMember)
       const dbRes = await fetch("/api/roster", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -40,7 +38,7 @@ export default function AdminRosterPage() {
           name: formData.name,
           role: formData.role,
           bio: formData.bio,
-          imageUrl: blob.url, // Ссылка из Vercel Blob
+          imageUrl: blob.url,
           instagram: formData.instagram,
           spotify: formData.spotify,
         }),
@@ -68,7 +66,6 @@ export default function AdminRosterPage() {
       </h2>
       
       <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6">
-        {/* Фото */}
         <div className="flex flex-col gap-2">
           <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest italic">
             Фото артиста (рекомендуется 3:4)
@@ -81,7 +78,6 @@ export default function AdminRosterPage() {
           />
         </div>
 
-        {/* Имя и Роль */}
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
             <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest italic">Псевдоним</label>
@@ -107,7 +103,6 @@ export default function AdminRosterPage() {
           </div>
         </div>
 
-        {/* Биография */}
         <div className="flex flex-col gap-2">
           <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest italic">Биография</label>
           <textarea 
@@ -118,7 +113,6 @@ export default function AdminRosterPage() {
           />
         </div>
 
-        {/* Соцсети */}
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
             <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest italic">Instagram (ссылка)</label>

@@ -7,7 +7,6 @@ export default function ArtistCard({ profiles }: { profiles: any[] }) {
   const current = profiles[index];
   const isMulti = profiles.length > 1;
 
-  // Функция переключения по кругу при клике на карточку
   const handleCardClick = () => {
     if (isMulti) {
       setIndex((prev) => (prev + 1) % profiles.length);
@@ -20,10 +19,9 @@ export default function ArtistCard({ profiles }: { profiles: any[] }) {
       className={`relative bg-black group overflow-hidden aspect-[3/4] border-r border-b border-zinc-900 transition-all duration-500
         ${isMulti ? 'cursor-pointer active:scale-[0.98]' : ''}`}
     >
-      {/* Фото с анимацией смены */}
       {current.imageUrl && (
         <Image 
-          key={current.imageUrl} // Key нужен для перезапуска анимации
+          key={current.imageUrl}
           src={current.imageUrl} 
           alt={current.name}
           fill
@@ -31,19 +29,16 @@ export default function ArtistCard({ profiles }: { profiles: any[] }) {
         />
       )}
 
-      {/* Оверлей градиент */}
       <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10" />
 
-      {/* Контентная часть */}
       <div className="absolute inset-0 flex flex-col justify-end p-8 z-20">
         
-        {/* Вывод всех ролей (вместо +1 роль) */}
         <div className="flex flex-wrap gap-1 mb-3">
           {profiles.map((p, idx) => (
             <button
               key={idx}
               onClick={(e) => {
-                e.stopPropagation(); // Чтобы не срабатывал клик по всей карточке
+                e.stopPropagation();
                 setIndex(idx);
               }}
               className={`text-[8px] font-black px-2 py-0.5 uppercase tracking-tighter border transition-all
@@ -56,12 +51,10 @@ export default function ArtistCard({ profiles }: { profiles: any[] }) {
           ))}
         </div>
 
-        {/* Имя текущей роли */}
         <h2 className="text-4xl font-black uppercase italic text-white leading-none tracking-tighter transition-all group-hover:translate-x-1">
           {current.name}
         </h2>
         
-        {/* Подсказка aka для других ролей */}
         {isMulti && (
           <div className="mt-2 flex items-center gap-2 overflow-hidden">
             <span className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest whitespace-nowrap">
@@ -80,7 +73,6 @@ export default function ArtistCard({ profiles }: { profiles: any[] }) {
         </div>
       </div>
 
-      {/* Индикатор "переключаемости" в углу */}
       {isMulti && (
         <div className="absolute top-4 right-4">
           <div className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />

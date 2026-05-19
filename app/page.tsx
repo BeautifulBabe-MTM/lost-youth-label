@@ -23,7 +23,6 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col">
-      {/* HERO SECTION - Лицо лейбла */}
       <section className="relative h-[80vh] flex items-center justify-center overflow-hidden border-b border-zinc-900">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-800/20 via-black to-black z-0" />
 
@@ -56,7 +55,6 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        {/* Сетка релизов: 2 в ряд на мобилах, 4 на десктопе */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {releases.map((release: any) => (
             <ReleaseCard key={release.id} release={release} />
@@ -64,7 +62,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* BEATS SECTION - Маркет битов */}
       <section className="py-24 px-6 md:px-12 border-t border-zinc-900">
         <div className="flex justify-between items-end mb-12">
           <div>
@@ -83,7 +80,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* MANIFESTO - Про что мы */}
       <section className="py-32 px-6 border-t border-zinc-900 bg-zinc-950/30">
         <div className="max-w-4xl mx-auto text-center">
           <span className="text-xs font-bold text-zinc-600 uppercase tracking-[0.5em] block mb-6 italic">Манифест</span>
@@ -93,9 +89,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* FOOTER - Контакты */}
       <footer className="py-12 px-6 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-8 text-[10px] text-zinc-600 uppercase tracking-widest">
-        <div>© 2026 Lost Youth Label. Все права защищены.</div>
+        <div>© {new Date().getFullYear()} Lost Youth Label. Все права защищены.</div>
         <div className="flex gap-8">
           <a href="#" className="hover:text-white transition">Telegram</a>
           <a href="#" className="hover:text-white transition">VK</a>

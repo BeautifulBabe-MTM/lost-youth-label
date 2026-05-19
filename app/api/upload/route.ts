@@ -6,13 +6,11 @@ export async function POST(request: Request): Promise<NextResponse> {
         const { searchParams } = new URL(request.url);
         const filename = searchParams.get('filename') || 'beat.mp3';
 
-        // ПРОВЕРКА 1: Видит ли сервер файл?
         if (!request.body) {
             console.error("❌ Файл не пришел в теле запроса");
             return NextResponse.json({ error: "No file body" }, { status: 400 });
         }
 
-        // ПРОВЕРКА 2: Видит ли сервер токен?
         if (!process.env.BLOB_READ_WRITE_TOKEN) {
             console.error("❌ ТОКЕН ОТСУТСТВУЕТ В .ENV.LOCAL");
             return NextResponse.json({ error: "Token missing" }, { status: 500 });
