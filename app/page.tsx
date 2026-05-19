@@ -95,9 +95,6 @@ export default async function HomePage() {
           <a href="#" className="hover:text-white transition">Telegram</a>
           <a href="#" className="hover:text-white transition">VK</a>
           <a href="#" className="hover:text-white transition">YouTube</a>
-          <Link href="/admin/upload-beat" className="text-[8px] uppercase tracking-widest">
-            Панель управления
-          </Link>
         </div>
       </footer>
     </div>

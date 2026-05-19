@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { prisma } from '@/app/lib/db';
 import ArtistCard from '@/app/components/ArtistCard';
+import Link from 'next/link';
 
 async function getRoster() {
   const members = await prisma.rosterMember.findMany();
@@ -38,14 +39,17 @@ export default async function RosterPage() {
             <ArtistCard key={idx} profiles={profiles} />
           ))}
 
-          <div className="bg-black flex items-center justify-center border-r border-b border-zinc-900 aspect-[3/4] hover:bg-zinc-950 transition-colors cursor-pointer group">
+          <Link
+            href="/contact"
+            className="bg-black flex items-center justify-center border-r border-b border-zinc-900 aspect-[3/4] hover:bg-zinc-950 transition-colors cursor-pointer group select-none"
+          >
             <div className="flex flex-col items-center gap-4">
               <div className="w-12 h-12 border border-dashed border-zinc-700 flex items-center justify-center group-hover:border-white transition-colors">
                 <span className="text-2xl text-zinc-700 group-hover:text-white">+</span>
               </div>
               <p className="text-zinc-700 uppercase font-black text-sm tracking-widest group-hover:text-white transition-colors">Подать заявку</p>
             </div>
-          </div>
+          </Link>
         </div>
       </div>
     </main>
