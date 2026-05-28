@@ -32,14 +32,22 @@ export default function UploadBeatPage() {
     const [selectedArtist, setSelectedArtist] = useState("");
     const [isCustomGenre, setIsCustomGenre] = useState(false);
 
+    // Расширяем стейт формы под новые поля цен
     const [formData, setFormData] = useState({
         title: "",
         genre: "Trap",
         bpm: "",
-        price: "",
+        price: "",           // Базовый прайс (MP3)
+        priceWav: "",        // Опциональный прайс за WAV
+        priceExclusive: "",  // Опциональный прайс за эксклюзив
     });
 
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    // Рефы для каждого типа файла
+    const previewInputRef = useRef<HTMLInputElement>(null);
+    const mp3InputRef = useRef<HTMLInputElement>(null);
+    const wavInputRef = useRef<HTMLInputElement>(null);
+    const stemsInputRef = useRef<HTMLInputElement>(null);
+
     const [status, setStatus] = useState("");
 
     const currentArtist = artists.find(a => a.id === selectedArtist);
@@ -51,33 +59,66 @@ export default function UploadBeatPage() {
             .then(data => { if (Array.isArray(data)) setArtists(data); });
     }, []);
 
+    // Хелпер для загрузки одного конкретного файла в облако
+    const uploadFile = async (file: File | undefined, label: string) => {
+        if (!file) return null;
+        setStatus(`ЗАГРУЗКА ${label}...`);
+        const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+            method: 'POST',
+            body: file,
+        });
+        if (!res.ok) throw new Error(`Не удалось загрузить ${label}`);
+        const blob = await res.json();
+        return blob.url as string;
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const file = fileInputRef.current?.files?.[0];
-        if (!file || !selectedArtist) return alert("Заполни все поля!");
+        
+        const previewFile = previewInputRef.current?.files?.[0];
+        const mp3File = mp3InputRef.current?.files?.[0];
+        const wavFile = wavInputRef.current?.files?.[0];
+        const stemsFile = stemsInputRef.current?.files?.[0];
+
+        // Валидация: Превью-аудио и автор обязательны всегда
+        if (!previewFile || !selectedArtist) {
+            return alert("Заполни имя автора и загрузи превью бита!");
+        }
 
         try {
-            setStatus("ЗАГРУЗКА В ОБЛАКО...");
-            const uploadRes = await fetch(`/api/upload?filename=${file.name}`, {
-                method: 'POST', body: file,
-            });
-            const blob = await uploadRes.json();
+            // Очередь загрузки файлов в S3/Vercel Blob
+            const audioUrl = await uploadFile(previewFile, "ПРЕВЬЮ ДЛЯ ПЛЕЕРА");
+            const mp3FileUrl = await uploadFile(mp3File, "ЧИСТОГО MP3 (ДЛЯ ИЗДАТЕЛЯ)");
+            const wavFileUrl = await uploadFile(wavFile, "ЧИСТОГО WAV (ДЛЯ ИЗДАТЕЛЯ)");
+            const stemsFileUrl = await uploadFile(stemsFile, "ZIP-АРХИВА СО СТЕМСАМИ");
 
-            setStatus("СОХРАНЕНИЕ В БАЗУ...");
+            setStatus("СОХРАНЕНИЕ В БАЗУ ДАННЫХ...");
+            
             const dbRes = await fetch("/api/beats", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    ...formData,
-                    audioUrl: blob.url,
+                    title: formData.title,
+                    genre: formData.genre,
+                    bpm: parseInt(formData.bpm, 10),
+                    price: parseFloat(formData.price),
+                    priceWav: formData.priceWav ? parseFloat(formData.priceWav) : null,
+                    priceExclusive: formData.priceExclusive ? parseFloat(formData.priceExclusive) : null,
+                    audioUrl,
+                    mp3FileUrl,
+                    wavFileUrl,
+                    stemsFileUrl,
                     rosterMemberId: selectedArtist
                 }),
             });
 
             if (dbRes.ok) {
-                setStatus("БИТ ОПУБЛИКОВАН!");
-                alert("Успешно!");
+                setStatus("БИТ И СТРУКТУРА ЦЕН ОПУБЛИКОВАНЫ!");
+                alert("Данные успешно улетели в базу!");
                 window.location.reload();
+            } else {
+                const errData = await dbRes.json();
+                throw new Error(errData.message || "Ошибка сохранения");
             }
         } catch (error: any) {
             setStatus("ОШИБКА: " + error.message);
@@ -85,11 +126,14 @@ export default function UploadBeatPage() {
     };
 
     return (
-        <div className="max-w-xl mx-auto p-10 bg-black border border-zinc-900 mt-10 font-sans text-white shadow-2xl">
+        <div className="max-w-2xl mx-auto p-10 bg-black border border-zinc-900 mt-10 font-sans text-white shadow-2xl">
             <div className="flex justify-between items-center mb-8 border-b border-zinc-900 pb-6">
-                <h2 className="text-2xl font-black uppercase mb-2 tracking-tighter italic border-l-4 border-white pl-2">
-                    НОВЫЙ БИТ / <span className="text-zinc-600">LOST YOUTH</span>
-                </h2>
+                <div className="flex flex-col">
+                  <p className="text-[10px] font-mono tracking-widest text-zinc-500">// ADMIN CONSOLE</p>
+                  <h2 className="text-2xl font-black uppercase tracking-tighter italic text-white">
+                      НОВЫЙ ТРЕК <span className="text-zinc-600">/ КОНФИГУРАТОР</span>
+                  </h2>
+                </div>
                 {selectedArtist && isLabelArtist && (
                     <span className="bg-white text-black text-[9px] px-2 py-1 font-black uppercase tracking-tighter animate-pulse">
                         LABEL AUTH
@@ -98,11 +142,13 @@ export default function UploadBeatPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                
+                {/* АВТОР */}
                 <div className="flex flex-col gap-2">
-                    <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-[0.2em]">Producer / Artist</label>
+                    <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-[0.2em]">// ИСПОЛНИТЕЛЬ</label>
                     <select
                         required
-                        className="bg-zinc-950 border border-zinc-800 p-4 outline-none focus:border-white transition uppercase text-xs font-bold text-white"
+                        className="bg-zinc-950 border border-zinc-800 p-4 outline-none focus:border-white transition uppercase text-xs font-bold text-white cursor-pointer"
                         onChange={(e) => setSelectedArtist(e.target.value)}
                         value={selectedArtist}
                     >
@@ -111,25 +157,15 @@ export default function UploadBeatPage() {
                     </select>
                 </div>
 
-                <div className="flex flex-col gap-2">
-                    <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-[0.2em]">Audio (High Quality)</label>
-                    <input type="file" ref={fileInputRef} accept="audio/*" className="bg-zinc-950 border border-zinc-800 p-4 text-[10px] cursor-pointer file:bg-transparent file:border-0 file:text-white file:font-bold" />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                    <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-[0.2em]">Beat Title</label>
-                    <input required placeholder="ИМЯ БИТА" className="bg-zinc-950 border border-zinc-800 p-4 outline-none focus:border-white transition uppercase font-bold tracking-widest text-sm"
-                        onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
-                </div>
-
+                {/* ЖАНР */}
                 <div className="flex flex-col gap-2">
                     <div className="flex justify-between">
-                        <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-[0.2em]">Genre / Style</label>
+                        <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-[0.2em]">// ЖАНР / СТИЛЬ</label>
                         <button
                             type="button"
                             onClick={() => {
                                 setIsCustomGenre(!isCustomGenre);
-                                setFormData({ ...formData, genre: "" }); // Сбрасываем при переключении
+                                setFormData({ ...formData, genre: "" });
                             }}
                             className="text-[9px] uppercase underline text-zinc-600 hover:text-white"
                         >
@@ -140,48 +176,95 @@ export default function UploadBeatPage() {
                     {isCustomGenre ? (
                         <input
                             placeholder="ВВЕДИТЕ ЖАНР"
-                            className="bg-zinc-950 border border-zinc-800 p-4 outline-none focus:border-white transition uppercase text-xs font-bold"
+                            className="bg-zinc-950 border border-zinc-800 p-4 outline-none focus:border-white transition uppercase text-xs font-bold text-white"
                             onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
                         />
                     ) : (
-                        <div className="relative">
-                            <select
-                                className="w-full bg-zinc-950 border border-zinc-800 p-4 outline-none focus:border-white transition uppercase text-xs font-bold text-white"
-                                onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
-                                value={formData.genre}
-                            >
-                                {Object.entries(GENRES_MAP).map(([category, list]) => (
-                                    <optgroup key={category} label={category.toUpperCase()} className="bg-zinc-950 text-zinc-500 text-[10px] font-black tracking-widest pt-2">
-                                        {list.map(g => (
-                                            <option key={g} value={g} className="text-white text-xs font-bold bg-zinc-950">
-                                                {g}
-                                            </option>
-                                        ))}
-                                    </optgroup>
-                                ))}
-                            </select>
-                        </div>
+                        <select
+                            className="w-full bg-zinc-950 border border-zinc-800 p-4 outline-none focus:border-white transition uppercase text-xs font-bold text-white cursor-pointer"
+                            onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
+                            value={formData.genre}
+                        >
+                            {Object.entries(GENRES_MAP).map(([category, list]) => (
+                                <optgroup key={category} label={category.toUpperCase()} className="bg-zinc-950 text-zinc-500 text-[10px] font-black tracking-widest pt-2">
+                                    {list.map(g => (
+                                        <option key={g} value={g} className="text-white text-xs font-bold bg-zinc-950">
+                                            {g}
+                                        </option>
+                                    ))}
+                                </optgroup>
+                            ))}
+                        </select>
                     )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-[0.2em]">BPM</label>
-                        <input required placeholder="140" type="number" className="bg-zinc-950 border border-zinc-800 p-4 outline-none focus:border-white transition font-mono"
-                            onChange={(e) => setFormData({ ...formData, bpm: e.target.value })} />
+                {/* ИМЯ, BPM */}
+                <div className="grid grid-cols-3 gap-4">
+                    <div className="flex flex-col gap-2 col-span-2">
+                        <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-[0.2em]">// НАЗВАНИЕ БИТА</label>
+                        <input required placeholder="TITLE" className="bg-zinc-950 border border-zinc-800 p-4 outline-none focus:border-white transition uppercase font-bold tracking-widest text-xs text-white"
+                            onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
                     </div>
                     <div className="flex flex-col gap-2">
-                        <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-[0.2em]">Price ($)</label>
-                        <input required placeholder="29.99" type="number" step="0.01" className="bg-zinc-950 border border-zinc-800 p-4 outline-none focus:border-white transition font-mono"
-                            onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
+                        <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-[0.2em]">// BPM</label>
+                        <input required placeholder="140" type="number" className="bg-zinc-950 border border-zinc-800 p-4 outline-none focus:border-white transition font-mono text-xs text-white"
+                            onChange={(e) => setFormData({ ...formData, bpm: e.target.value })} />
                     </div>
                 </div>
 
-                <button type="submit" className="bg-white text-black font-black p-6 uppercase tracking-[0.3em] text-xs hover:bg-zinc-200 transition active:scale-[0.98] mt-4 shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                    Опубликовать бит
+                {/* БЛОК ЦЕН */}
+                <div className="border border-zinc-900 p-5 bg-zinc-950/40 space-y-4">
+                  <label className="text-[10px] uppercase text-zinc-400 font-mono tracking-[0.2em] block">// ТАРИФНАЯ СЕТКА (ОСТАВЬ ПУСТЫМ ДЛЯ АВТО-РАСЧЕТА)</label>
+                  
+                  <div className="grid grid-cols-3 gap-4">
+                      <div className="flex flex-col gap-2">
+                          <label className="text-[9px] uppercase text-zinc-500 font-bold">MP3 / БАЗА ($) *</label>
+                          <input required placeholder="29" type="number" step="0.01" className="bg-black border border-zinc-800 p-3 outline-none focus:border-white transition font-mono text-xs text-white"
+                              onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                          <label className="text-[9px] uppercase text-zinc-500 font-bold">WAV PRICE ($)</label>
+                          <input placeholder="Авто" type="number" step="0.01" className="bg-black border border-zinc-800 p-3 outline-none focus:border-white transition font-mono text-xs text-white"
+                              onChange={(e) => setFormData({ ...formData, priceWav: e.target.value })} />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                          <label className="text-[9px] uppercase text-zinc-500 font-bold">EXCLUSIVE ($)</label>
+                          <input placeholder="Авто" type="number" step="0.01" className="bg-black border border-zinc-800 p-3 outline-none focus:border-white transition font-mono text-xs text-white"
+                              onChange={(e) => setFormData({ ...formData, priceExclusive: e.target.value })} />
+                      </div>
+                  </div>
+                </div>
+
+                {/* СЕКЦИЯ ЗАГРУЗКИ ФАЙЛОВ */}
+                <div className="border border-zinc-900 p-5 bg-zinc-950/40 space-y-4">
+                    <label className="text-[10px] uppercase text-zinc-400 font-mono tracking-[0.2em] block">// СКЛАД ЦИФРОВЫХ ТОВАРОВ</label>
+                    
+                    <div className="flex flex-col gap-1">
+                        <label className="text-[9px] uppercase text-zinc-500 font-black">1. Аудио-превью (Защищенный файл для сайта) *</label>
+                        <input type="file" required ref={previewInputRef} accept="audio/*" className="bg-black border border-zinc-900 p-3 text-[10px] text-zinc-400 file:bg-transparent file:border-0 file:text-white file:font-mono file:text-[10px]" />
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                        <label className="text-[9px] uppercase text-zinc-500 font-bold">2. Оригинал .MP3 (высылается при MP3 Lease)</label>
+                        <input type="file" ref={mp3InputRef} accept="audio/mp3, audio/mpeg" className="bg-black border border-zinc-900 p-3 text-[10px] text-zinc-400 file:bg-transparent file:border-0 file:text-white file:font-mono file:text-[10px]" />
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                        <label className="text-[9px] uppercase text-zinc-500 font-bold">3. Оригинал .WAV (высылается при WAV Lease)</label>
+                        <input type="file" ref={wavInputRef} accept="audio/wav, audio/x-wav" className="bg-black border border-zinc-900 p-3 text-[10px] text-zinc-400 file:bg-transparent file:border-0 file:text-white file:font-mono file:text-[10px]" />
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                        <label className="text-[9px] uppercase text-zinc-500 font-bold">4. Дорожки / STEMS (ZIP-архив для Exclusive)</label>
+                        <input type="file" ref={stemsInputRef} accept=".zip,.rar,.7z" className="bg-black border border-zinc-900 p-3 text-[10px] text-zinc-400 file:bg-transparent file:border-0 file:text-white file:font-mono file:text-[10px]" />
+                    </div>
+                </div>
+
+                <button type="submit" className="bg-white text-black font-black p-6 uppercase tracking-[0.3em] text-xs hover:bg-zinc-200 transition active:scale-[0.98] mt-2 shadow-[0_0_20px_rgba(255,255,255,0.05)]">
+                    Выкатить релиз в каталог
                 </button>
 
-                {status && <p className="text-[9px] uppercase text-center text-zinc-600 mt-2 tracking-[0.3em] italic">{status}</p>}
+                {status && <p className="text-[9px] uppercase text-center text-emerald-400 mt-2 tracking-[0.2em] font-mono bg-zinc-900/60 py-2 border border-zinc-900 animate-pulse">{status}</p>}
             </form>
         </div>
     );

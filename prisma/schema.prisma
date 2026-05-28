@@ -52,9 +52,25 @@ model Beat {
   bpm       Int
   price     Float
   audioUrl  String
+  mp3FileUrl     String?       // Ссылка на чистый MP3 без тегов в S3/Vercel Blob
+  wavFileUrl     String?       // Ссылка на чистый WAV в S3/Vercel Blob
+  stemsFileUrl   String?       // Ссылка на ZIP-архив со стемсами (дорожками)
   authorId  String?   @db.ObjectId 
   author    User?     @relation(fields: [authorId], references: [id])
   rosterMemberId String? @db.ObjectId
   rosterMember   RosterMember? @relation(fields: [rosterMemberId], references: [id])
   createdAt      DateTime?      @default(now())
+}
+
+model Order {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  beatId        String    @db.ObjectId
+  beat          Beat      @relation(fields: [beatId], references: [id])
+  customerEmail String
+  licenseType   String    // "mp3" | "wav" | "exclusive"
+  amount        Float
+  currency      String    // "USD"
+  paymentMethod String    // "card" | "crypto"
+  status        String    // "PENDING" | "PAID" | "FAILED"
+  createdAt     DateTime  @default(now())
 }
