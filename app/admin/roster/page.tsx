@@ -8,8 +8,9 @@ export default function AdminRosterPage() {
     bio: "",
     instagram: "",
     spotify: "",
+    telegram: "",
   });
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState("");
 
@@ -25,22 +26,23 @@ export default function AdminRosterPage() {
         method: 'POST',
         body: file,
       });
-      
+
       if (!uploadRes.ok) throw new Error("Ошибка загрузки в облако");
       const blob = await uploadRes.json();
-      
+
       setStatus("Сохранение в базу данных...");
 
       const dbRes = await fetch("/api/roster", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           name: formData.name,
           role: formData.role,
           bio: formData.bio,
           imageUrl: blob.url,
           instagram: formData.instagram,
           spotify: formData.spotify,
+          telegram: formData.telegram,
         }),
       });
 
@@ -64,36 +66,36 @@ export default function AdminRosterPage() {
       <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-8 border-l-4 border-white pl-4">
         Добавить в Лейбл <span className="text-zinc-700">/ LOST YOUTH</span>
       </h2>
-      
+
       <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6">
         <div className="flex flex-col gap-2">
           <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest italic">
             Фото артиста (рекомендуется 3:4)
           </label>
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            accept="image/*" 
-            className="bg-zinc-950 border border-zinc-900 p-4 text-xs file:bg-zinc-800 file:text-white file:border-none file:px-4 file:py-1 file:mr-4 file:cursor-pointer hover:file:bg-zinc-700" 
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept="image/*"
+            className="bg-zinc-950 border border-zinc-900 p-4 text-xs file:bg-zinc-800 file:text-white file:border-none file:px-4 file:py-1 file:mr-4 file:cursor-pointer hover:file:bg-zinc-700"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
             <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest italic">Псевдоним</label>
-            <input 
-              required 
-              placeholder="ИМЯ АРТИСТА" 
+            <input
+              required
+              placeholder="ИМЯ АРТИСТА"
               className="bg-zinc-950 border border-zinc-900 p-4 outline-none focus:border-zinc-500 uppercase tracking-widest"
-              onChange={(e) => setFormData({...formData, name: e.target.value})} 
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
           </div>
-          
+
           <div className="flex flex-col gap-2">
             <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest italic">Роль</label>
-            <select 
+            <select
               className="bg-zinc-950 border border-zinc-900 p-4 outline-none appearance-none cursor-pointer uppercase text-xs tracking-widest h-full"
-              onChange={(e) => setFormData({...formData, role: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
             >
               <option value="Producer">Producer</option>
               <option value="Sound Engineer">Sound Engineer</option>
@@ -105,35 +107,44 @@ export default function AdminRosterPage() {
 
         <div className="flex flex-col gap-2">
           <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest italic">Биография</label>
-          <textarea 
-            placeholder="КРАТКОЕ ИНФО (ОПЦИОНАЛЬНО)" 
-            rows={3} 
+          <textarea
+            placeholder="КРАТКОЕ ИНФО (ОПЦИОНАЛЬНО)"
+            rows={3}
             className="bg-zinc-950 border border-zinc-900 p-4 outline-none focus:border-zinc-500 uppercase text-xs tracking-widest"
-            onChange={(e) => setFormData({...formData, bio: e.target.value})} 
+            onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
             <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest italic">Instagram (ссылка)</label>
-            <input 
-              placeholder="URL" 
+            <input
+              placeholder="URL"
               className="bg-zinc-950 border border-zinc-900 p-4 outline-none text-xs"
-              onChange={(e) => setFormData({...formData, instagram: e.target.value})} 
+              onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
             />
           </div>
           <div className="flex flex-col gap-2">
             <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest italic">Spotify (ссылка)</label>
-            <input 
-              placeholder="URL" 
+            <input
+              placeholder="URL"
               className="bg-zinc-950 border border-zinc-900 p-4 outline-none text-xs"
-              onChange={(e) => setFormData({...formData, spotify: e.target.value})} 
+              onChange={(e) => setFormData({ ...formData, spotify: e.target.value })}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-[0.2em]">Telegram</label>
+            <input
+              placeholder="@username или ссылка"
+              className="bg-zinc-950 border border-zinc-800 p-4 outline-none focus:border-white transition text-xs font-bold text-white"
+              value={formData.telegram}
+              onChange={(e) => setFormData({ ...formData, telegram: e.target.value })}
             />
           </div>
         </div>
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="bg-white text-black font-black p-5 uppercase tracking-[0.3em] hover:bg-zinc-300 transition-all duration-300 mt-4 active:scale-95"
         >
           Подтвердить участника

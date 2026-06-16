@@ -92,7 +92,7 @@ export default async function HomePage() {
       <footer className="py-12 px-6 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-8 text-[10px] text-zinc-600 uppercase tracking-widest">
         <div>© {new Date().getFullYear()} Lost Youth Label. Все права защищены.</div>
         <div className="flex gap-8">
-          <a href="#" className="hover:text-white transition">Telegram</a>
+          <a href="https://t.me/+gwRalYmx77EyNDIy" className="hover:text-white transition">Telegram</a>
           <a href="#" className="hover:text-white transition">VK</a>
           <a href="#" className="hover:text-white transition">YouTube</a>
         </div>

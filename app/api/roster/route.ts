@@ -4,7 +4,7 @@ import { prisma } from "@/app/lib/db";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, role, bio, imageUrl, instagram, spotify } = body;
+    const { name, role, bio, imageUrl, instagram, spotify, telegram } = body;
 
     const newMember = await prisma.rosterMember.create({
       data: {
@@ -14,6 +14,7 @@ export async function POST(req: Request) {
         imageUrl,
         instagram,
         spotify,
+        telegram: telegram || null,
       },
     });
 

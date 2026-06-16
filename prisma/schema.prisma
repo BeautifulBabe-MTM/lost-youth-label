@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
@@ -12,65 +12,69 @@ model User {
   id    String  @id @default(auto()) @map("_id") @db.ObjectId
   name  String  @unique
   role  String  @default("GUEST")
-  bio   String? 
+  bio   String?
   beats Beat[]
 }
 
 model RosterMember {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String   @unique
-  alias  String?
-  role      String   // Например: "Producer", "Sound Engineer", "Artist"
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  name      String    @unique
+  alias     String?
+  role      String // Например: "Producer", "Sound Engineer", "Artist"
   bio       String?
   imageUrl  String?
   instagram String?
   spotify   String?
+  telegram  String? 
   beats     Beat[]
   releases  Release[]
   createdAt DateTime? @default(now())
 }
 
 model Release {
-  id             String        @id @default(auto()) @map("_id") @db.ObjectId
-  title          String
-  coverUrl       String?       // Обложка трека
-  audioUrl       String        // Ссылка на сам трек
-  spotifyUrl     String?
-  appleMusicUrl  String?
-  feat           String?
-  
-  rosterMemberId String        @db.ObjectId
-  author         RosterMember  @relation(fields: [rosterMemberId], references: [id])
-  
-  createdAt      DateTime?      @default(now())
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  coverUrl      String? // Обложка трека
+  audioUrl      String // Ссылка на сам трек
+  spotifyUrl    String?
+  appleMusicUrl String?
+  feat          String?
+
+  rosterMemberId String       @db.ObjectId
+  author         RosterMember @relation(fields: [rosterMemberId], references: [id])
+
+  createdAt DateTime? @default(now())
 }
 
 model Beat {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  title     String
-  genre     String
-  bpm       Int
-  price     Float
-  audioUrl  String
-  mp3FileUrl     String?       // Ссылка на чистый MP3 без тегов в S3/Vercel Blob
-  wavFileUrl     String?       // Ссылка на чистый WAV в S3/Vercel Blob
-  stemsFileUrl   String?       // Ссылка на ZIP-архив со стемсами (дорожками)
-  authorId  String?   @db.ObjectId 
-  author    User?     @relation(fields: [authorId], references: [id])
-  rosterMemberId String? @db.ObjectId
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
+  title          String
+  genre          String
+  bpm            Int
+  price          Float
+  priceWav       Float?
+  priceExclusive Float?
+  audioUrl       String
+  mp3FileUrl     String? // Ссылка на чистый MP3 без тегов в S3/Vercel Blob
+  wavFileUrl     String? // Ссылка на чистый WAV в S3/Vercel Blob
+  stemsFileUrl   String? // Ссылка на ZIP-архив со стемсами (дорожками)
+  authorId       String?       @db.ObjectId
+  author         User?         @relation(fields: [authorId], references: [id])
+  rosterMemberId String?       @db.ObjectId
   rosterMember   RosterMember? @relation(fields: [rosterMemberId], references: [id])
-  createdAt      DateTime?      @default(now())
+  createdAt      DateTime?     @default(now())
+  orders         Order[]
 }
 
 model Order {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  beatId        String    @db.ObjectId
-  beat          Beat      @relation(fields: [beatId], references: [id])
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  beatId        String   @db.ObjectId
+  beat          Beat     @relation(fields: [beatId], references: [id])
   customerEmail String
-  licenseType   String    // "mp3" | "wav" | "exclusive"
+  licenseType   String // "mp3" | "wav" | "exclusive"
   amount        Float
-  currency      String    // "USD"
-  paymentMethod String    // "card" | "crypto"
-  status        String    // "PENDING" | "PAID" | "FAILED"
-  createdAt     DateTime  @default(now())
+  currency      String // "USD"
+  paymentMethod String // "card" | "crypto"
+  status        String // "PENDING" | "PAID" | "FAILED"
+  createdAt     DateTime @default(now())
 }
