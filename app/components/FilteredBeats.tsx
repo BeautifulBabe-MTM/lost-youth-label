@@ -20,8 +20,8 @@ export default function FilteredBeats({ beats, artists }: { beats: any[], artist
         <button
           onClick={() => setSelectedArtistId(null)}
           className={`text-xs font-black uppercase tracking-widest px-4 py-2 border transition-all duration-300
-            ${selectedArtistId === null 
-              ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.1)]' 
+            ${selectedArtistId === null
+              ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.1)]'
               : 'bg-transparent text-zinc-500 border-zinc-900 hover:border-zinc-700 hover:text-white'}`}
         >
           ВСЕ БИТЫ [{beats.length}]
@@ -35,8 +35,8 @@ export default function FilteredBeats({ beats, artists }: { beats: any[], artist
               key={artist.id}
               onClick={() => setSelectedArtistId(artist.id)}
               className={`text-xs font-black uppercase tracking-widest px-4 py-2 border transition-all duration-300
-                ${selectedArtistId === artist.id 
-                  ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.1)]' 
+                ${selectedArtistId === artist.id
+                  ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.1)]'
                   : 'bg-transparent text-zinc-500 border-zinc-900 hover:border-zinc-700 hover:text-white'}`}
             >
               {artist.name} [{count}]
@@ -48,10 +48,11 @@ export default function FilteredBeats({ beats, artists }: { beats: any[], artist
       {/* Сетка битов */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredBeats.map((beat) => (
-          <BeatCard 
-            key={beat.id} 
-            beat={beat} 
-            onBuyClick={() => setBuyingBeat(beat)} // Передаем клик в карточку
+          <BeatCard
+            key={beat.id}
+            beat={beat}
+            //onBuyClick={() => setBuyingBeat(beat)} // Передаем клик в карточку
+            onBuyClick={() => { }}
           />
         ))}
 
