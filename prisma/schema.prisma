@@ -79,4 +79,5 @@ model Order {
   provider      String
   status        String // "PENDING" | "PAID" | "FAILED"
   createdAt     DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
