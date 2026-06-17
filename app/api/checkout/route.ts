@@ -2,15 +2,16 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/db";
 import crypto from "crypto";
 
-export async function POST(req: Request) {
+export const dynamic = "force-dynamic";
+
+export async function POST(request: Request) {
     try {
-        const { beatId, licenseType, email } = await req.json();
+        const { beatId, licenseType, email, beatTitle } = await request.json();
 
-        if (!beatId || !licenseType || !email) {
-            return NextResponse.json({ message: "Заполните все поля и email" }, { status: 400 });
+        if (!beatId || !licenseType || !email || !beatTitle) {
+            return NextResponse.json({ message: "Отсутствуют обязательные данные заказа" }, { status: 400 });
         }
-
-        // 1. Находим бит в базе данных
+        
         const beat = await prisma.beat.findUnique({
             where: { id: beatId }
         });
@@ -19,63 +20,85 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: "Бит не найден" }, { status: 404 });
         }
 
-        // 2. Считаем цену (кастим к any, чтобы TS не выебывался на скрытые поля схемы)
         const beatData = beat as any;
         let finalPriceUsd = Number(beatData.price || 0);
 
         if (licenseType === "wav") {
             finalPriceUsd = beatData.priceWav ? Number(beatData.priceWav) : finalPriceUsd * 2;
         } else if (licenseType === "exclusive") {
-            finalPriceUsd = beatData.priceExclusive ? Number(beatData.priceExclusive) : finalPriceUsd * 10;
+            finalPriceUsd = beatData.priceExclusive ? Number(beatData.priceExclusive) : finalPriceUsd * 6;
         }
 
-        // На всякий случай проверка, если цена осталась нулевой или кривой
-        if (!finalPriceUsd || isNaN(finalPriceUsd)) {
-            return NextResponse.json({ message: "Ошибка расчета стоимости бита" }, { status: 400 });
-        }
-
-        // AAIO работает в рублях (RUB). Конвертируем по курсу.
-        const exchangeRate = 95;
-        const finalAmountRub = Math.round(finalPriceUsd * exchangeRate);
-
-        // 3. Создаем запись о незавершенном заказе (инвойсе) в нашей MongoDB
         const order = await prisma.order.create({
             data: {
                 beatId: beat.id,
-                licenseType: licenseType, // "mp3" | "wav" | "exclusive"
-                customerEmail: email,     // Поменяли buyerEmail на customerEmail, как в схеме
-                amount: finalAmountRub,
-                currency: "USD",          // Твоя призма ждет строку, закинули дефолт
-                paymentMethod: "card",    // Или "crypto" в зависимости от выбора, пока пишем card
+                licenseType: licenseType,
+                customerEmail: email,
+                amount: finalPriceUsd,
+                currency: "USD",
+                paymentMethod: "card",
+                provider: "wayforpay",
                 status: "PENDING"
             }
         });
 
-        // 4. Параметры мерчанта AAIO
-        const merchantId = process.env.AAIO_MERCHANT_ID!;
-        const secretKey1 = process.env.AAIO_SECRET_KEY_1!;
+        const merchantAccount = "lost_youth_netlify_app";
+        const secretKey = process.env.WAYFORPAY_SECRET_KEY;
+        const siteUrl = "https://lost-youth.netlify.app";
+        
+        if (!secretKey) {
+            return NextResponse.json({ message: "Не задан WAYFORPAY_SECRET_KEY в .env" }, { status: 500 });
+        }
+
+        const merchantDomainName = "lost-youth.netlify.app";
         const orderId = order.id;
-        const currency = "RUB";
-        const desc = `LOST YOUTH: ${beatData.title?.toUpperCase() || "BEAT"} (${licenseType.toUpperCase()})`;
+        const orderDate = Math.floor(Date.now() / 1000);
+        const amount = finalPriceUsd;
+        const currency = "USD";
+        const productName = `License ${licenseType.toUpperCase()}: ${beat.title}`;
+        const productCount = 1;
+        const productPrice = amount;
 
-        // 5. Генерируем SHA-256 подпись по правилам AAIO
-        const signatureSource = `${merchantId}:${finalAmountRub}:${currency}:${secretKey1}:${orderId}`;
-        const sign = crypto.createHash("sha256").update(signatureSource).digest("hex");
+        // Строка для подписи
+        const stringToSign = [
+            merchantAccount,
+            merchantDomainName,
+            orderId,
+            orderDate,
+            amount,
+            currency,
+            productName,
+            productCount,
+            productPrice
+        ].join(';');
 
-        // 6. Формируем финальный URL оплаты для редиректа
-        const paymentUrl = new URL("https://aaio.io/merchant/pay");
-        paymentUrl.searchParams.append("merchant_id", merchantId);
-        paymentUrl.searchParams.append("amount", finalAmountRub.toString());
-        paymentUrl.searchParams.append("currency", currency);
-        paymentUrl.searchParams.append("order_id", orderId);
-        paymentUrl.searchParams.append("sign", sign);
-        paymentUrl.searchParams.append("desc", desc);
-        paymentUrl.searchParams.append("email", email);
+        const merchantSignature = crypto
+            .createHmac("md5", secretKey)
+            .update(stringToSign)
+            .digest("hex");
 
-        return NextResponse.json({ url: paymentUrl.toString() });
+        // Возвращаем чистые данные для формы
+        return NextResponse.json({
+            formData: {
+                merchantAccount,
+                merchantAuthType: "SimpleSignature",
+                merchantDomainName,
+                merchantSignature,
+                orderReference: orderId,
+                orderDate: orderDate.toString(),
+                amount: amount.toString(),
+                currency,
+                "productName[]": productName,
+                "productCount[]": productCount.toString(),
+                "productPrice[]": productPrice.toString(),
+                returnUrl: `${siteUrl}/order/success?orderId=${orderId}`,
+                serviceUrl: `${siteUrl}/api/webhooks/wayforpay`,
+                clientEmail: email
+            }
+        });
 
     } catch (error: any) {
-        console.error("AAIO_CHECKOUT_ERROR:", error);
+        console.error("WAYFORPAY_INTEGRATION_ERROR:", error);
         return NextResponse.json({ message: error.message }, { status: 500 });
     }
 }

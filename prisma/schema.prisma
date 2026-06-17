@@ -75,6 +75,7 @@ model Order {
   amount        Float
   currency      String // "USD"
   paymentMethod String // "card" | "crypto"
+  provider      String
   status        String // "PENDING" | "PAID" | "FAILED"
   createdAt     DateTime @default(now())
 }

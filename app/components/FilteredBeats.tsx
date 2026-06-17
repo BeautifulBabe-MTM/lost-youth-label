@@ -2,9 +2,12 @@
 
 import { useState } from 'react';
 import BeatCard from './BeatCard';
+import BeatPurchaseModal from '@/app/components/BeatPurchaseModal'; // Импортируем модалку
 
 export default function FilteredBeats({ beats, artists }: { beats: any[], artists: any[] }) {
   const [selectedArtistId, setSelectedArtistId] = useState<string | null>(null);
+  // Стейт для хранения бита, который юзер хочет купить
+  const [buyingBeat, setBuyingBeat] = useState<any | null>(null);
 
   const filteredBeats = selectedArtistId
     ? beats.filter(beat => beat.rosterMemberId === selectedArtistId)
@@ -12,6 +15,7 @@ export default function FilteredBeats({ beats, artists }: { beats: any[], artist
 
   return (
     <div className="space-y-8">
+      {/* Кнопки фильтра артистов */}
       <div className="flex flex-wrap gap-2 border-b border-zinc-900 pb-6">
         <button
           onClick={() => setSelectedArtistId(null)}
@@ -41,9 +45,14 @@ export default function FilteredBeats({ beats, artists }: { beats: any[], artist
         })}
       </div>
 
+      {/* Сетка битов */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredBeats.map((beat) => (
-          <BeatCard key={beat.id} beat={beat} />
+          <BeatCard 
+            key={beat.id} 
+            beat={beat} 
+            onBuyClick={() => setBuyingBeat(beat)} // Передаем клик в карточку
+          />
         ))}
 
         {filteredBeats.length === 0 && (
@@ -54,6 +63,16 @@ export default function FilteredBeats({ beats, artists }: { beats: any[], artist
           </div>
         )}
       </div>
+
+      {/* ОДНА МОДАЛКА НА ВЕСЬ КАТАЛОГ */}
+      {buyingBeat && (
+        <BeatPurchaseModal
+          key={buyingBeat.id} // Сбрасываем стейт при смене бита
+          beat={buyingBeat}
+          isOpen={!!buyingBeat}
+          onClose={() => setBuyingBeat(null)}
+        />
+      )}
     </div>
   );
 }

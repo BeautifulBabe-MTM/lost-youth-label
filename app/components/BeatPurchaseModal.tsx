@@ -22,10 +22,10 @@ export default function BeatPurchaseModal({ beat, isOpen, onClose }: PurchaseMod
   const [license, setLicense] = useState<'mp3' | 'wav' | 'exclusive'>('wav');
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'crypto'>('card');
   const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   if (!isOpen) return null;
 
-  // Динамическое определение точной цены для каждой лицензии
   const getLicensePrice = (type: 'mp3' | 'wav' | 'exclusive') => {
     if (type === 'mp3') return beat.price;
     if (type === 'wav') return beat.priceWav || (beat.price * 2);
@@ -35,13 +35,67 @@ export default function BeatPurchaseModal({ beat, isOpen, onClose }: PurchaseMod
 
   const currentPrice = getLicensePrice(license);
 
-  const handleNextStep = (e: React.FormEvent) => {
+  const handleNextStep = async (e: React.FormEvent) => {
     e.preventDefault();
     if (step === 1) {
       setStep(2);
     } else {
-      // Кнопка финальной оплаты (пока заглушка перед интеграцией API)
-      alert(`Запуск оплаты: ${paymentMethod}, Лицензия: ${license}, Email: ${email}, Сумма: $${currentPrice}`);
+      try {
+        setIsLoading(true);
+
+        const response = await fetch("/api/checkout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            beatId: beat.id,
+            licenseType: license, // "mp3" | "wav" | "exclusive"
+            email: email,
+            beatPrice: currentPrice,
+            beatTitle: beat.title,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Ошибка при создании сессии оплаты");
+        }
+
+        // Проверяем, прилетел ли объект формы от WayForPay с бэкенда
+        if (data.formData) {
+          // 1. Создаем скрытую форму программно
+          const form = document.createElement("form");
+          form.method = "POST";
+          form.action = "https://secure.wayforpay.com/pay";
+          form.acceptCharset = "utf-8";
+
+          // 2. Набиваем инпутами из прилетевшего formData
+          Object.entries(data.formData).forEach(([key, value]) => {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = key;
+            input.value = value as string;
+            form.appendChild(input);
+          });
+
+          // 3. Добавляем в документ и триггерим POST-отправку
+          document.body.appendChild(form);
+          form.submit();
+
+          // Удаляем за собой, чтобы не засорять DOM
+          document.body.removeChild(form);
+        } else {
+          alert("Не удалось сгенерировать данные для WayForPay.");
+        }
+
+      } catch (error: any) {
+        console.error("Ошибка фронтенда при покупке:", error);
+        alert(`Критическая ошибка: ${error.message}`);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -85,9 +139,8 @@ export default function BeatPurchaseModal({ beat, isOpen, onClose }: PurchaseMod
                     return (
                       <label
                         key={item.id}
-                        className={`flex justify-between items-center p-4 border border-zinc-900 cursor-pointer transition select-none bg-black ${
-                          license === item.id ? 'border-white bg-zinc-900/40' : 'hover:border-zinc-700'
-                        }`}
+                        className={`flex justify-between items-center p-4 border border-zinc-900 cursor-pointer transition select-none bg-black ${license === item.id ? 'border-white bg-zinc-900/40' : 'hover:border-zinc-700'
+                          }`}
                       >
                         <div className="flex items-center gap-3">
                           <input
@@ -114,9 +167,8 @@ export default function BeatPurchaseModal({ beat, isOpen, onClose }: PurchaseMod
                 <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest block">// 2. МЕТОД ОПЛАТЫ</label>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <label className={`flex items-center gap-3 p-4 border border-zinc-900 bg-black cursor-pointer transition select-none ${
-                    paymentMethod === 'card' ? 'border-white bg-zinc-900/40' : 'hover:border-zinc-700'
-                  }`}>
+                  <label className={`flex items-center gap-3 p-4 border border-zinc-900 bg-black cursor-pointer transition select-none ${paymentMethod === 'card' ? 'border-white bg-zinc-900/40' : 'hover:border-zinc-700'
+                    }`}>
                     <input
                       type="radio"
                       name="payment"
@@ -127,9 +179,8 @@ export default function BeatPurchaseModal({ beat, isOpen, onClose }: PurchaseMod
                     <span className="text-xs font-black uppercase tracking-wider text-white">CARD / APPLE PAY</span>
                   </label>
 
-                  <label className={`flex items-center gap-3 p-4 border border-zinc-900 bg-black cursor-pointer transition select-none ${
-                    paymentMethod === 'crypto' ? 'border-white bg-zinc-900/40' : 'hover:border-zinc-700'
-                  }`}>
+                  <label className={`flex items-center gap-3 p-4 border border-zinc-900 bg-black cursor-pointer transition select-none ${paymentMethod === 'crypto' ? 'border-white bg-zinc-900/40' : 'hover:border-zinc-700'
+                    }`}>
                     <input
                       type="radio"
                       name="payment"
