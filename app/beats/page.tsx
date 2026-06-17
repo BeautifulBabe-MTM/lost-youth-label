@@ -7,6 +7,9 @@ export const metadata = {
 
 export default async function BeatsMarketPage() {
   const beats = await prisma.beat.findMany({
+    where: {
+      isSold: false
+    },
     include: {
       rosterMember: true,
     },

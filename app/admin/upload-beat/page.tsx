@@ -32,7 +32,6 @@ export default function UploadBeatPage() {
     const [selectedArtist, setSelectedArtist] = useState("");
     const [isCustomGenre, setIsCustomGenre] = useState(false);
 
-    // Расширяем стейт формы под новые поля цен
     const [formData, setFormData] = useState({
         title: "",
         genre: "Trap",
@@ -42,7 +41,6 @@ export default function UploadBeatPage() {
         priceExclusive: "",  // Опциональный прайс за эксклюзив
     });
 
-    // Рефы для каждого типа файла
     const previewInputRef = useRef<HTMLInputElement>(null);
     const mp3InputRef = useRef<HTMLInputElement>(null);
     const wavInputRef = useRef<HTMLInputElement>(null);
@@ -59,7 +57,6 @@ export default function UploadBeatPage() {
             .then(data => { if (Array.isArray(data)) setArtists(data); });
     }, []);
 
-    // Хелпер для загрузки одного конкретного файла в облако
     const uploadFile = async (file: File | undefined, label: string) => {
         if (!file) return null;
         setStatus(`ЗАГРУЗКА ${label}...`);
@@ -80,16 +77,31 @@ export default function UploadBeatPage() {
         const wavFile = wavInputRef.current?.files?.[0];
         const stemsFile = stemsInputRef.current?.files?.[0];
 
-        // Валидация: Превью-аудио и автор обязательны всегда
+        // 1. ЖЕСТКАЯ ВАЛИДАЦИЯ АВТОРА И ПРЕВЬЮ
         if (!previewFile || !selectedArtist) {
             return alert("Заполни имя автора и загрузи превью бита!");
         }
 
+        // 2. АВТО-РАСЧЕТ ЦЕН КАК В CHECKOUT API (ЕСЛИ ОСТАВИЛИ ПУСТЫМИ)
+        const basePrice = parseFloat(formData.price);
+        const finalPriceWav = formData.priceWav ? parseFloat(formData.priceWav) : basePrice * 2;
+        const finalPriceExclusive = formData.priceExclusive ? parseFloat(formData.priceExclusive) : basePrice * 6;
+
+        // 3. УМНАЯ ВАЛИДАЦИЯ НАЛИЧИЯ ФАЙЛОВ ПОД ТАРИФЫ
+        // Если загружен чистый MP3, он должен быть. Но даже без него при MP3 Lease можно отдавать превью.
+        // А вот для WAV и STEMS файлы обязаны быть, раз тарифы активны!
+        if (finalPriceWav > 0 && !wavFile) {
+            return alert(`Ошибка: У тебя активен тариф WAV ($${finalPriceWav}). Загрузи оригинал .WAV файла!`);
+        }
+        if (finalPriceExclusive > 0 && !stemsFile) {
+            return alert(`Ошибка: У тебя активен тариф EXCLUSIVE ($${finalPriceExclusive}). Загрузи ZIP-архив со стемсами!`);
+        }
+
         try {
-            // Очередь загрузки файлов в S3/Vercel Blob
+            // Запускаем последовательную загрузку файлов в Vercel Blob
             const audioUrl = await uploadFile(previewFile, "ПРЕВЬЮ ДЛЯ ПЛЕЕРА");
-            const mp3FileUrl = await uploadFile(mp3File, "ЧИСТОГО MP3 (ДЛЯ ИЗДАТЕЛЯ)");
-            const wavFileUrl = await uploadFile(wavFile, "ЧИСТОГО WAV (ДЛЯ ИЗДАТЕЛЯ)");
+            const mp3FileUrl = await uploadFile(mp3File, "ЧИСТОГО MP3");
+            const wavFileUrl = await uploadFile(wavFile, "ЧИСТОГО WAV");
             const stemsFileUrl = await uploadFile(stemsFile, "ZIP-АРХИВА СО СТЕМСАМИ");
 
             setStatus("СОХРАНЕНИЕ В БАЗУ ДАННЫХ...");
@@ -101,20 +113,21 @@ export default function UploadBeatPage() {
                     title: formData.title,
                     genre: formData.genre,
                     bpm: parseInt(formData.bpm, 10),
-                    price: parseFloat(formData.price),
-                    priceWav: formData.priceWav ? parseFloat(formData.priceWav) : null,
-                    priceExclusive: formData.priceExclusive ? parseFloat(formData.priceExclusive) : null,
+                    price: basePrice,
+                    priceWav: finalPriceWav,
+                    priceExclusive: finalPriceExclusive,
                     audioUrl,
                     mp3FileUrl,
                     wavFileUrl,
                     stemsFileUrl,
-                    rosterMemberId: selectedArtist
+                    rosterMemberId: selectedArtist,
+                    isSold: false // По умолчанию бит, конечно же, не продан
                 }),
             });
 
             if (dbRes.ok) {
                 setStatus("БИТ И СТРУКТУРА ЦЕН ОПУБЛИКОВАНЫ!");
-                alert("Данные успешно улетели в базу!");
+                alert("Бит успешно выкачен в продакшн!");
                 window.location.reload();
             } else {
                 const errData = await dbRes.json();
@@ -214,7 +227,7 @@ export default function UploadBeatPage() {
 
                 {/* БЛОК ЦЕН */}
                 <div className="border border-zinc-900 p-5 bg-zinc-950/40 space-y-4">
-                  <label className="text-[10px] uppercase text-zinc-400 font-mono tracking-[0.2em] block">// ТАРИФНАЯ СЕТКА (ОСТАВЬ ПУСТЫМ ДЛЯ АВТО-РАСЧЕТА)</label>
+                  <label className="text-[10px] uppercase text-zinc-400 font-mono tracking-[0.2em] block">// ТАРИФНАЯ СЕТКА (ПУСТЫЕ ПОЛЯ РАССЧИТАЮТСЯ АВТОМАТИЧЕСКИ)</label>
                   
                   <div className="grid grid-cols-3 gap-4">
                       <div className="flex flex-col gap-2">
@@ -224,12 +237,12 @@ export default function UploadBeatPage() {
                       </div>
                       <div className="flex flex-col gap-2">
                           <label className="text-[9px] uppercase text-zinc-500 font-bold">WAV PRICE ($)</label>
-                          <input placeholder="Авто" type="number" step="0.01" className="bg-black border border-zinc-800 p-3 outline-none focus:border-white transition font-mono text-xs text-white"
+                          <input placeholder="x2 от базы" type="number" step="0.01" className="bg-black border border-zinc-800 p-3 outline-none focus:border-white transition font-mono text-xs text-white"
                               onChange={(e) => setFormData({ ...formData, priceWav: e.target.value })} />
                       </div>
                       <div className="flex flex-col gap-2">
                           <label className="text-[9px] uppercase text-zinc-500 font-bold">EXCLUSIVE ($)</label>
-                          <input placeholder="Авто" type="number" step="0.01" className="bg-black border border-zinc-800 p-3 outline-none focus:border-white transition font-mono text-xs text-white"
+                          <input placeholder="x6 от базы" type="number" step="0.01" className="bg-black border border-zinc-800 p-3 outline-none focus:border-white transition font-mono text-xs text-white"
                               onChange={(e) => setFormData({ ...formData, priceExclusive: e.target.value })} />
                       </div>
                   </div>
@@ -250,12 +263,12 @@ export default function UploadBeatPage() {
                     </div>
 
                     <div className="flex flex-col gap-1">
-                        <label className="text-[9px] uppercase text-zinc-500 font-bold">3. Оригинал .WAV (высылается при WAV Lease)</label>
+                        <label className="text-[9px] uppercase text-zinc-500 font-bold">3. Оригинал .WAV (ОБЯЗАТЕЛЕН, если активен тариф WAV)</label>
                         <input type="file" ref={wavInputRef} accept="audio/wav, audio/x-wav" className="bg-black border border-zinc-900 p-3 text-[10px] text-zinc-400 file:bg-transparent file:border-0 file:text-white file:font-mono file:text-[10px]" />
                     </div>
 
                     <div className="flex flex-col gap-1">
-                        <label className="text-[9px] uppercase text-zinc-500 font-bold">4. Дорожки / STEMS (ZIP-архив для Exclusive)</label>
+                        <label className="text-[9px] uppercase text-zinc-500 font-bold">4. Дорожки / STEMS (ZIP-архив; ОБЯЗАТЕЛЕН для Exclusive)</label>
                         <input type="file" ref={stemsInputRef} accept=".zip,.rar,.7z" className="bg-black border border-zinc-900 p-3 text-[10px] text-zinc-400 file:bg-transparent file:border-0 file:text-white file:font-mono file:text-[10px]" />
                     </div>
                 </div>

@@ -62,6 +62,7 @@ model Beat {
   author         User?         @relation(fields: [authorId], references: [id])
   rosterMemberId String?       @db.ObjectId
   rosterMember   RosterMember? @relation(fields: [rosterMemberId], references: [id])
+  isSold         Boolean       @default(false)
   createdAt      DateTime?     @default(now())
   orders         Order[]
 }
