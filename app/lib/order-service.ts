@@ -23,7 +23,6 @@ export async function fulfillOrder(orderId: string) {
     });
 
     if (alreadySoldExclusive) {
-      // Если кто-то успел купить эксклюзив на секунду раньше, меняем статус на FAILED
       await prisma.order.update({
         where: { id: orderId },
         data: { status: "FAILED" }
