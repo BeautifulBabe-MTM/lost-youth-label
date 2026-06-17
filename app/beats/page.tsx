@@ -1,5 +1,6 @@
 import { prisma } from "@/app/lib/db";
 import FilteredBeats from "@/app/components/FilteredBeats";
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: 'MARKET // LOST YOUTH',
