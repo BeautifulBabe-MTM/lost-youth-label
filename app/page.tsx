@@ -75,16 +75,7 @@ export default async function HomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {beats.map((beat: any) => (
-            <BeatCard
-              key={beat.id}
-              beat={beat}
-              onBuyClick={() => {
-                // Поскольку это серверный компонент, просто редиректим в маркет битов
-                if (typeof window !== 'undefined') {
-                  window.location.href = '/beats';
-                }
-              }}
-            />
+            <BeatCard key={beat.id} beat={beat} />
           ))}
         </div>
       </section>

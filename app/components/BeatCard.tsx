@@ -2,7 +2,7 @@
 import { Play, Pause, ShoppingCart } from 'lucide-react';
 import { usePlayer } from '@/store/usePlayer';
 
-export default function BeatCard({ beat, onBuyClick }: { beat: any, onBuyClick: () => void }) {
+export default function BeatCard({ beat, onBuyClick }: { beat: any, onBuyClick?: () => void }) {
   const { setBeat, activeBeat, isPlaying, toggle } = usePlayer();
 
   const isCurrent = activeBeat?.id === beat.id;
